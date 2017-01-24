@@ -36,7 +36,7 @@ dc_fnc_crosshair = {
 				"aim",
 				"bipod"
 			];
-			if (alive player && cameraView in ["INTERNAL","EXTERNAL"] && _showCrosshair) then {
+			if (alive player && cameraView in ["INTERNAL","EXTERNAL"] && _showCrosshair && difficultyOption "weaponCrosshair" == 0) then {
 		 
 				_posLaser = [0,0,0];
 				_right = [0,0,0];
