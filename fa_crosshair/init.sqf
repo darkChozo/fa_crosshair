@@ -1,3 +1,9 @@
+/*
+ *  FA Crosshair
+ *
+ *  Thanks to Ciaran for the initial code injection and Folk ARPS for being Folk ARPS.
+ *  Code currently maintained by darkChozo - https://github.com/darkChozo/fa_crosshair
+ */
 
 dc_fac_fnc_crosshair = {
 	if (hasInterface && isNil {dc_fac_ev_crosshair}) then {
@@ -26,22 +32,28 @@ dc_fac_fnc_crosshair = {
 		
 		dc_fac_ev_crosshair = addMissionEventHandler ["draw3D",{
 			_showCrosshair = false;
+			
+			// Should crosshair be shown for animation? Animations in order: stopped, tactical pace, walking, deployed, FFV, limping
 			{
 				if ([_x,animationState player] call BIS_fnc_inString) exitWith {_showCrosshair = true};
 			} forEach [
 				"MstpSrasW",
 				"MtacSrasW",
 				"MwlkSrasW",
-				"MlmpSrasW",
+				"bipod",
 				"aim",
-				"bipod"
+				"MlmpSrasW"
 			];
+			
+			// Only show crosshair if player alive, player not aiming down sights, animation correct and vanilla crosshair off
 			if (alive player && cameraView in ["INTERNAL","EXTERNAL"] && _showCrosshair && difficultyOption "weaponCrosshair" == 0) then {
-		 
 				_posLaser = [0,0,0];
 				_right = [0,0,0];
 				_up = [0,0,0];
 				_forward = [0,0,0];
+				
+				// To estimate muzzle position, primary weapons (rifles) use the Weapon mempoint, pistols + launchers use RightHand mempoint.
+				// Weapon is more accurate but only tracks the primary weapon.
 				if (currentWeapon player == primaryWeapon player) then {
 					_posLaser = AGLToASL (player modelToWorld (player selectionPosition "Weapon"));
 				
@@ -58,7 +70,7 @@ dc_fac_fnc_crosshair = {
 					_right = _forward vectorCrossProduct _up;
 				};
 		 
-
+				// Calculate muzzle offset based on weapon type.
 				{
 					switch (currentWeapon player) do {
 						case (handgunWeapon player) : {
@@ -74,16 +86,18 @@ dc_fac_fnc_crosshair = {
 				} forEach [_right, _forward, _up];
 		 
 
-
+				// Raycast collision check; up to 15m
 				_posXhair = _posLaser vectorAdd (_forward vectorMultiply 15);
 				_hitLaser = lineIntersectsSurfaces [_posLaser, _posXhair, player];
+
 				if (count _hitLaser > 0) then
 				{
+					// If there's a hit, display crosshair, 
 					_arXhair = ASLToAGL ((_hitLaser select 0) select 0);
 					_dist = ASLToAGL _posLaser distance _arxHair;
-					_alphaMod = 1 min (1 - (_dist - 5)/10);
-					_scaleMod = .7 + ((_dist min 5) / 16.7);
-					drawIcon3D [dc_fac_var_crosshairImage, [1, 1, 1, .9 * _alphaMod], _arXhair, _scaleMod*dc_fac_var_crosshairScale, _scaleMod*dc_fac_var_crosshairScale, 0];
+					_alphaMod = 1 min (1 - (_dist - 5)/10);  // full alpha at <10m, decays linerally to 0 between 10-15m
+					_scaleMod = .7 + ((_dist min 5)^2 / 83); // from 5m, scales down to 70% quadratically at 0m.
+					drawIcon3D [dc_fac_var_crosshairImage, [1, 1, 1, _alphaMod], _arXhair, _scaleMod*dc_fac_var_crosshairScale, _scaleMod*dc_fac_var_crosshairScale, 0];
 				};
 
 			};
