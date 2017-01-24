@@ -5,7 +5,7 @@
  *  Code currently maintained by darkChozo - https://github.com/darkChozo/fa_crosshair
  */
 
-dc_fac_fnc_crosshair = {
+dc_fac_fnc_crosshairInit = {
 	if (hasInterface && isNil {dc_fac_ev_crosshair}) then {
 		_crossHairImages = [
 			"\a3\ui_f\data\IGUI\Cfg\Cursors\weapon_ca.paa",
@@ -14,18 +14,38 @@ dc_fac_fnc_crosshair = {
 			"\a3\ui_f\data\IGUI\Cfg\Cursors\selectOver_ca.paa",
 			"\a3\ui_f\data\IGUI\Cfg\Cursors\watch_ca.paa"
 		];
+		
+		dc_fac_fnc_setCrosshairImage = {
+			if (!params [["_image","",[""]]]) exitWith {systemChat "dc_fac_fnc_setCrosshairImage: bad arguments"};
+			profileNamespace setVariable ["dc_fac_var_crosshairImage",_image];
+			saveProfileNamespace;
+		};
 
-		dc_fac_var_crosshairImage = _crossHairImages select 0;
-		dc_fac_var_crosshairScale = 2;
+		dc_fac_fnc_setCrosshairScale = {
+			if (!params [["_scale",2,[2]]]) exitWith {systemChat "dc_fac_var_crosshairScale: bad arguments"};
+			profileNamespace setVariable ["dc_fac_var_crosshairScale",_scale];
+			saveProfileNamespace;
+		};
+
+		if (isNil {profileNamespace getVariable "dc_fac_var_crosshairImage"}) then {
+			_crossHairImages select 0 call dc_fac_fnc_setCrosshairImage;
+		};
+		if (isNil {profileNamespace getVariable "dc_fac_var_crosshairScale"}) then {
+			2 call dc_fac_fnc_setCrosshairScale;
+		};
 		
-		_briefingText = "
-			<execute expression=""dc_fac_var_crosshairScale=1.25"">Use Smaller Crosshair</execute><br/>
-			<execute expression=""dc_fac_var_crosshairScale=2"">Use Normal Crosshair</execute><br/>
-			<execute expression=""dc_fac_var_crosshairScale=3"">Use Larger Crosshair</execute><br/>
-		";
-		
+		_briefingText = "";
+
 		{
-			_briefingText = _briefingText + format ["<br/><img image=""%1"" width=30 height=30/> <execute expression=""dc_fac_var_crosshairImage='%1'""> Use this crosshair</execute>",_x];
+			_briefingText = format ["%1<execute expression=""%2 call dc_fac_fnc_setCrosshairScale;"">Use %3 Crosshair</execute><br/>",_briefingText,_x select 1,_x select 0];
+		} forEach [["Smallest",.75],
+				   ["Smaller",1.25],
+				   ["Normal",2],
+				   ["Larger",3],
+				   ["Giant",4]];
+
+		{
+			_briefingText = _briefingText + format ["<br/><img image=""%1"" width=30 height=30/> <execute expression=""'%1' call dc_fac_fnc_setCrosshairImage""> Use this crosshair</execute>",_x];
 		} forEach _crossHairImages;
 
 		player createDiaryRecord ["diary",["FA Crosshair",_briefingText]];
@@ -97,7 +117,12 @@ dc_fac_fnc_crosshair = {
 					_dist = ASLToAGL _posLaser distance _arxHair;
 					_alphaMod = 1 min (1 - (_dist - 5)/10);  // full alpha at <10m, decays linerally to 0 between 10-15m
 					_scaleMod = .7 + ((_dist min 5)^2 / 83); // from 5m, scales down to 70% quadratically at 0m.
-					drawIcon3D [dc_fac_var_crosshairImage, [1, 1, 1, _alphaMod], _arXhair, _scaleMod*dc_fac_var_crosshairScale, _scaleMod*dc_fac_var_crosshairScale, 0];
+					drawIcon3D [profileNamespace getVariable "dc_fac_var_crosshairImage",
+							    [1, 1, 1, _alphaMod],
+								_arXhair,
+								_scaleMod*(profileNamespace getVariable "dc_fac_var_crosshairScale"),
+								_scaleMod*(profileNamespace getVariable "dc_fac_var_crosshairScale"),
+								0];
 				};
 
 			};
@@ -106,8 +131,8 @@ dc_fac_fnc_crosshair = {
 };
 
 if (isServer) then {
-	publicVariable "dc_fac_fnc_crosshair";
-	remoteExec ["dc_fac_fnc_crosshair",0,true];
+	publicVariable "dc_fac_fnc_crosshairInit";
+	remoteExec ["dc_fac_fnc_crosshairInit",0,true];
 } else {
-	call dc_fac_fnc_crosshair;
+	call dc_fac_fnc_crosshairInit;
 };
