@@ -53,7 +53,7 @@ dc_fac_fnc_crosshairInit = {
 		dc_fac_ev_crosshair = addMissionEventHandler ["draw3D",{
 			_showCrosshair = false;
 			
-			// Should crosshair be shown for animation? Animations in order: stopped, tactical pace, walking, deployed, FFV, limping
+			// Should crosshair be shown for animation? Animations in order: stopped, tactical pace, walking, deployed, FFV, limping, diving, bottom diving, surface diving
 			{
 				if ([_x,animationState player] call BIS_fnc_inString) exitWith {_showCrosshair = true};
 			} forEach [
@@ -62,7 +62,10 @@ dc_fac_fnc_crosshairInit = {
 				"MwlkSrasW",
 				"bipod",
 				"aim",
-				"MlmpSrasW"
+				"MlmpSrasW",
+				"AdvePercMstpSnonWrfl",
+				"AbdvPercMstpSnonWrfl",
+				"AsdvPercMstpSnonWrfl"
 			];
 			
 			// Only show crosshair if player alive, player not aiming down sights, animation correct and vanilla crosshair off
