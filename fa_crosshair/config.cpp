@@ -2,10 +2,11 @@ class CfgPatches
 {
 	class FA_crosshair
 	{
-		units[] = {};
-		weapons[] = {};
+		name = "FA Crosshair";
 		author[] = {"Ciaran","darkChozo"};
 		authorUrl = "folkarps.com";
+		units[] = {};
+		weapons[] = {};
 	};
 };
 

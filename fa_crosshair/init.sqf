@@ -5,6 +5,7 @@
  *  Code currently maintained by darkChozo - https://github.com/darkChozo/fa_crosshair
  */
 
+ 
 dc_fac_fnc_crosshairInit = {
 	if (hasInterface && isNil {dc_fac_ev_crosshair}) then {
 		/******** Settings ********/
@@ -44,6 +45,27 @@ Enable crosshair? <execute expression=""true call dc_fac_fnc_crosshairEnable"">O
 		
 		_briefingText = _briefingText + format ["
 Display crosshair at long range? <execute expression=""true call dc_fac_fnc_crosshairRange"">YES</execute>/<execute expression=""false call dc_fac_fnc_crosshairRange"">NO</execute><br/><br/>"];
+
+
+
+		// Holster Weapon Action
+		dc_fac_fnc_holsterWeapon = {
+			params ["_chBool"];
+			profileNamespace setVariable ['dc_fac_var_holsterWeapon',_chBool];
+			saveProfileNamespace;
+		};
+
+		if (isNil {profileNamespace getVariable "dc_fac_var_holsterWeapon"}) then {
+			false call dc_fac_fnc_holsterWeapon;
+		};
+		
+		_briefingText = _briefingText + format ["
+Enable holster weapon action? <execute expression=""true call dc_fac_fnc_holsterWeapon"">YES</execute>/<execute expression=""false call dc_fac_fnc_holsterWeapon"">NO</execute><br/><br/>"];
+
+		[] spawn {
+			waitUntil {!isNull player}; // JIP!
+			player addAction ["Holster Weapon",{player action ["SwitchWeapon", player, player, 100];},nil,-1,false,true,"","profileNamespace getVariable ['dc_fac_var_holsterWeapon',false] && {vehicle player == player && {currentWeapon player != ''}}"];
+		};
 
 
 
